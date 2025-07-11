@@ -19,8 +19,15 @@
   }
 }
 
+/* Global CSS ของคุณ */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  /* Font Inter ถูกกำหนดใน src/app/layout.tsx แล้ว */
+}
+
+/* แก้ไขปัญหา Layout สำหรับ Ant Design และ Next.js App Router */
+html, body, #__next {
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* ป้องกัน scrollbar ที่ไม่จำเป็นจาก layout */
 }

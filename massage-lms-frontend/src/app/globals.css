@@ -5,12 +5,12 @@
   --foreground: #171717;
 }
 
-@theme inline {
+/* @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
+} */
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -23,6 +23,7 @@
 body {
   margin: 0;
   /* Font Inter ถูกกำหนดใน src/app/layout.tsx แล้ว */
+  background-color: #f0f2f5; /* สีพื้นหลังโดยรวมตาม Figma */
 }
 
 /* แก้ไขปัญหา Layout สำหรับ Ant Design และ Next.js App Router */
@@ -31,3 +32,53 @@ html, body, #__next {
   width: 100%;
   overflow: hidden; /* ป้องกัน scrollbar ที่ไม่จำเป็นจาก layout */
 }
+
+/* Custom styles for Ant Design overrides or specific elements */
+.ant-layout-sider {
+  background-color: #001529 !important; /* สี Sidebar ตาม Figma */
+}
+
+.ant-menu-dark.ant-menu-inline {
+  background-color: #001529 !important; /* สีเมนูใน Sidebar */
+}
+
+.ant-menu-dark .ant-menu-item-selected {
+  background-color: #1677ff !important; /* สีเมนูที่เลือก */
+}
+
+/* เพิ่ม styles สำหรับปุ่มเพื่อให้ดูดีขึ้น */
+.ant-btn-primary {
+  border-radius: 8px !important; /* ให้ปุ่มมีขอบมน */
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045); /* เพิ่มเงาเล็กน้อย */
+}
+
+.ant-btn-primary:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ant-card {
+  border-radius: 12px !important; /* Card มีขอบมนมากขึ้น */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* เงา Card */
+}
+
+.ant-modal-content {
+  border-radius: 12px !important; /* Modal มีขอบมน */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* เงา Modal */
+}
+
+.ant-table-wrapper {
+  border-radius: 12px !important; /* Table มีขอบมน */
+  overflow: hidden; /* เพื่อให้ขอบมนของ Table แสดงผลถูกต้อง */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* เงา Table */
+}
+
+.ant-table-thead > tr > th {
+  background-color: #f5f5f5 !important; /* สีพื้นหลัง Header ของ Table */
+  font-weight: 600 !important;
+  color: #333 !important;
+}
+
+.ant-input, .ant-select-selector, .ant-picker {
+  border-radius: 8px !important; /* Input fields มีขอบมน */
+}
+

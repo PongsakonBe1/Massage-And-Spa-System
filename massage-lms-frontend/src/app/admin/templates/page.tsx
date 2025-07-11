@@ -1,12 +1,11 @@
-// massage-lms-frontend/src/app/admin/templates/page.tsx
-// หน้าสำหรับจัดการแม่แบบเทมเพลต (Client Component)
-// ไม่ต้อง Import AdminLayout เพราะจะถูกห่อหุ้มโดย src/app/admin/layout.tsx โดยอัตโนมัติ
+'use client';
 
-'use client'; // *** สำคัญมาก: ระบุว่าเป็น Client Component ***
-
-import React from 'react';
+import '@ant-design/v5-patch-for-react-19';
+import React, { useState } from 'react'; // Import useState
 import { Upload, Button, message, Card, Col, Row, Typography, Modal, Input, Form, Select } from 'antd';
 import { UploadOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import type { UploadProps, UploadFile, UploadChangeParam } from 'antd/lib/upload/interface';
+import Image from 'next/image'; // Import Image component
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -14,21 +13,28 @@ const { Option } = Select;
 interface Template {
   id: string;
   name: string;
-  type: 'certificate' | 'report'; // เพิ่ม type ของแม่แบบ
-  preview: string; // URL สำหรับรูปภาพตัวอย่าง
+  type: 'certificate' | 'report';
+  preview: string;
   settings: {
     font: string;
     web: string;
   };
 }
 
-export default function TemplatesPage() {
-  const [isModalVisible, setIsModalVisible] = React.useState(false);
-  const [editingTemplate, setEditingTemplate] = React.useState<Template | null>(null);
-  const [form] = Form.useForm();
+interface TemplateFormValues {
+  name: string;
+  type: 'certificate' | 'report';
+  font: string;
+  web: string;
+}
 
-  // ข้อมูลแม่แบบจำลอง (Dummy Data)
-  const dummyTemplates: Template[] = [
+export default function TemplatesPage() {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
+  const [form] = Form.useForm<TemplateFormValues>();
+
+  // *** แก้ไข: ใช้ useState เพื่อจัดการข้อมูลแม่แบบใน State ***
+  const [templates, setTemplates] = useState<Template[]>([
     {
       id: '1',
       name: 'ใบประกาศมาตรฐาน',
@@ -59,72 +65,94 @@ export default function TemplatesPage() {
         web: 'premium.com',
       }
     },
-  ];
+    {
+      id: '4',
+      name: 'แม่แบบรายงานผลการเรียน',
+      type: 'report',
+      preview: 'https://placehold.co/300x200/FFA500/FFFFFF?text=Grade+Report',
+      settings: {
+        font: 'Kanit',
+        web: 'grades.com',
+      }
+    },
+  ]);
 
-  // Props สำหรับ Ant Design Upload Component
-  const props = {
+  const props: UploadProps = {
     name: 'file',
-    action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76', // Mock API endpoint สำหรับการอัปโหลด (คุณจะต้องเปลี่ยนเป็น API ของคุณเอง)
+    action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
     headers: {
       authorization: 'authorization-text',
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onChange(info: any) {
-      if (info.file.status !== 'uploading') {
-        console.log(info.file, info.fileList);
-      }
-      if (info.file.status === 'done') {
-        message.success(`${info.file.name} file uploaded successfully`);
-      } else if (info.file.status === 'error') {
-        message.error(`${info.file.name} file upload failed.`);
+    onChange(info: UploadChangeParam<UploadFile>) {
+      if (info.file.status !== undefined) {
+        if (info.file.status !== 'uploading') {
+          console.log(info.file, info.fileList);
+        }
+        if (info.file.status === 'done') {
+          message.success(`${info.file.name} file uploaded successfully`);
+        } else if (info.file.status === 'error') {
+          message.error(`${info.file.name} file upload failed.`);
+        }
+      } else {
+        console.warn('File status is undefined:', info.file);
       }
     },
   };
 
-  // ฟังก์ชันสำหรับเปิด Modal เพิ่มแม่แบบ
   const handleAdd = () => {
     setEditingTemplate(null);
     form.resetFields();
     setIsModalVisible(true);
   };
 
-  // ฟังก์ชันสำหรับเปิด Modal แก้ไขแม่แบบ
   const handleEdit = (template: Template) => {
     setEditingTemplate(template);
     form.setFieldsValue({
       name: template.name,
-      type: template.type, // ตั้งค่า type ด้วย
+      type: template.type,
       font: template.settings.font,
       web: template.settings.web,
     });
     setIsModalVisible(true);
   };
 
-  // ฟังก์ชันสำหรับลบแม่แบบ
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleDelete = (id: string) => {
+  const handleDelete = (idToDelete: string) => { // เปลี่ยนชื่อ parameter
     Modal.confirm({
       title: 'ยืนยันการลบ',
       content: 'คุณแน่ใจหรือไม่ว่าต้องการลบแม่แบบนี้?',
       okText: 'ลบ',
       cancelText: 'ยกเลิก',
       onOk() {
-        // *** Logic สำหรับลบข้อมูลจริง (คุณจะต้องเรียก API ไปยัง Backend ที่นี่) ***
+        // *** แก้ไข: อัปเดต State โดยการกรองแม่แบบที่ถูกลบออก ***
+        setTemplates(prevTemplates => prevTemplates.filter(template => template.id !== idToDelete));
         message.success('ลบแม่แบบสำเร็จ!');
       },
     });
   };
 
-  // ฟังก์ชันเมื่อกดปุ่ม OK ใน Modal (เพิ่ม/แก้ไข)
   const handleOk = () => {
     form.validateFields()
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .then(values => {
+      .then((values: TemplateFormValues) => {
         if (editingTemplate) {
-          // *** Logic สำหรับอัปเดตข้อมูลจริง (คุณจะต้องเรียก API ไปยัง Backend ที่นี่) ***
+          // *** แก้ไข: อัปเดต State สำหรับการแก้ไขข้อมูล ***
+          setTemplates(prevTemplates =>
+            prevTemplates.map(template =>
+              template.id === editingTemplate.id ? { ...template, ...values, settings: { ...template.settings, font: values.font, web: values.web } } : template
+            )
+          );
           message.success('อัปเดตแม่แบบสำเร็จ!');
         } else {
-          // *** Logic สำหรับเพิ่มข้อมูลจริง (คุณจะต้องเรียก API ไปยัง Backend ที่นี่) ***
+          // *** แก้ไข: อัปเดต State สำหรับการเพิ่มข้อมูลใหม่ ***
+          const newTemplate: Template = {
+            id: (templates.length + 1).toString(), // ควรสร้าง ID จาก Backend จริงๆ
+            ...values,
+            preview: 'https://placehold.co/300x200/CCCCCC/000000?text=New+Template', // กำหนด placeholder
+            settings: {
+                font: values.font,
+                web: values.web
+            }
+          };
+          setTemplates(prevTemplates => [...prevTemplates, newTemplate]);
           message.success('เพิ่มแม่แบบสำเร็จ!');
         }
         setIsModalVisible(false);
@@ -134,59 +162,56 @@ export default function TemplatesPage() {
       });
   };
 
-  // ฟังก์ชันเมื่อกดปุ่ม Cancel ใน Modal
   const handleCancel = () => {
     setIsModalVisible(false);
   };
 
   return (
     <>
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">จัดการแม่แบบเทมเพลต</h1>
-      <div className="mb-6 flex flex-wrap gap-4 items-center">
-        {/* ปุ่มอัปโหลดตราโรงเรียน */}
+      <h1 className="text-3xl font-bold mb-8 text-gray-800">จัดการแม่แบบเทมเพลต</h1>
+      <div className="mb-8 flex flex-wrap gap-4 items-center">
         <Upload {...props}>
-          <Button icon={<UploadOutlined />} className="rounded-md shadow-sm">อัปโหลดตราโรงเรียน</Button>
+          <Button icon={<UploadOutlined />} className="rounded-lg shadow-sm px-6 py-3 text-base">อัปโหลดตราโรงเรียน</Button>
         </Upload>
-        {/* ปุ่มเพิ่มแม่แบบใหม่ */}
         <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={handleAdd}
-          className="bg-green-500 hover:bg-green-600 text-white rounded-md shadow-md"
+          className="bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-md px-6 py-3 text-base"
         >
           เพิ่มแม่แบบใหม่
         </Button>
       </div>
 
-      {/* แสดงรายการแม่แบบในรูปแบบ Card */}
-      <Row gutter={[16, 16]}>
-        {dummyTemplates.map(template => (
+      <Row gutter={[24, 24]}>
+        {/* *** แก้ไข: ใช้ templates state เป็น dataSource *** */}
+        {templates.map(template => (
           <Col xs={24} sm={12} md={8} lg={6} key={template.id}>
             <Card
               hoverable
               cover={
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   alt={template.name}
                   src={template.preview}
-                  // เพิ่ม onError เพื่อแสดงภาพ Placeholder หากโหลดภาพไม่ได้
-                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://placehold.co/300x200/CCCCCC/000000?text=No+Preview'; }}
-                  className="w-full h-40 object-cover rounded-t-lg" // Tailwind class
+                  width={300}
+                  height={200}
+                  className="w-full h-40 object-cover rounded-t-xl"
+                  unoptimized={true}
                 />
               }
               actions={[
-                <EditOutlined key="edit" onClick={() => handleEdit(template)} className="text-blue-500 hover:text-blue-700" />,
-                <DeleteOutlined key="delete" onClick={() => handleDelete(template.id)} className="text-red-500 hover:text-red-700" />,
+                <EditOutlined key="edit" onClick={() => handleEdit(template)} className="text-blue-500 hover:text-blue-700 text-xl" />,
+                <DeleteOutlined key="delete" onClick={() => handleDelete(template.id)} className="text-red-500 hover:text-red-700 text-xl" />,
               ]}
-              className="rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300" // Tailwind class
+              className="rounded-xl shadow-custom-light hover:shadow-custom-medium transition-shadow duration-300"
             >
               <Card.Meta
                 title={<span className="font-semibold text-lg text-gray-800">{template.name}</span>}
                 description={
                   <>
-                    <Text type="secondary" className="text-sm">ประเภท: {template.type === 'certificate' ? 'ใบประกาศ' : 'รายงาน'}</Text><br />
-                    <Text type="secondary" className="text-sm">ฟอนต์: {template.settings.font}</Text><br />
-                    <Text type="secondary" className="text-sm">เว็บ: {template.settings.web}</Text>
+                    <Text type="secondary" className="text-sm text-gray-600">ประเภท: {template.type === 'certificate' ? 'ใบประกาศ' : 'รายงาน'}</Text><br />
+                    <Text type="secondary" className="text-sm text-gray-600">ฟอนต์: {template.settings.font}</Text><br />
+                    <Text type="secondary" className="text-sm text-gray-600">เว็บ: {template.settings.web}</Text>
                   </>
                 }
               />
@@ -195,13 +220,13 @@ export default function TemplatesPage() {
         ))}
       </Row>
 
-      {/* Modal สำหรับเพิ่ม/แก้ไขแม่แบบ */}
       <Modal
         title={editingTemplate ? 'แก้ไขแม่แบบ' : 'เพิ่มแม่แบบใหม่'}
         open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
-        className="rounded-lg"
+        className="rounded-xl"
+        centered
       >
         <Form
           form={form}
@@ -211,39 +236,38 @@ export default function TemplatesPage() {
         >
           <Form.Item
             name="name"
-            label="ชื่อแม่แบบ"
+            label={<span className="font-semibold text-gray-700">ชื่อแม่แบบ</span>}
             rules={[{ required: true, message: 'กรุณากรอกชื่อแม่แบบ!' }]}
           >
-            <Input placeholder="เช่น ใบประกาศมาตรฐาน" className="rounded-md" />
+            <Input placeholder="เช่น ใบประกาศมาตรฐาน" className="rounded-lg" />
           </Form.Item>
           <Form.Item
             name="type"
-            label="ประเภทแม่แบบ"
+            label={<span className="font-semibold text-gray-700">ประเภทแม่แบบ</span>}
             rules={[{ required: true, message: 'กรุณาเลือกประเภทแม่แบบ!' }]}
           >
-            <Select placeholder="เลือกประเภท">
+            <Select placeholder="เลือกประเภท" className="rounded-lg">
               <Option value="certificate">ใบประกาศ</Option>
               <Option value="report">รายงาน</Option>
             </Select>
           </Form.Item>
           <Form.Item
             name="font"
-            label="รูปแบบตัวอักษร"
+            label={<span className="font-semibold text-gray-700">รูปแบบตัวอักษร</span>}
             rules={[{ required: true, message: 'กรุณากำหนดรูปแบบตัวอักษร!' }]}
           >
-            <Input placeholder="เช่น Inter, Arial, Sarabun" className="rounded-md" />
+            <Input placeholder="เช่น Inter, Arial, Sarabun" className="rounded-lg" />
           </Form.Item>
           <Form.Item
             name="web"
-            label="กำหนดเว็บ (URL)"
+            label={<span className="font-semibold text-gray-700">กำหนดเว็บ (URL)</span>}
             rules={[{ required: true, message: 'กรุณากำหนด URL เว็บ!' }]}
           >
-            <Input placeholder="เช่น https://your-lms.com" className="rounded-md" />
+            <Input placeholder="เช่น https://your-lms.com" className="rounded-lg" />
           </Form.Item>
-          {/* Form.Item สำหรับการอัปโหลดไฟล์ (ตราโรงเรียน/แม่แบบ) */}
-          <Form.Item label="อัปโหลดไฟล์ (เช่น ตราโรงเรียน/ตัวอย่างแม่แบบ)">
+          <Form.Item label={<span className="font-semibold text-gray-700">อัปโหลดไฟล์ (เช่น ตราโรงเรียน/ตัวอย่างแม่แบบ)</span>}>
             <Upload {...props} maxCount={1}>
-              <Button icon={<UploadOutlined />} className="rounded-md">เลือกไฟล์</Button>
+              <Button icon={<UploadOutlined />} className="rounded-lg">เลือกไฟล์</Button>
             </Upload>
           </Form.Item>
         </Form>

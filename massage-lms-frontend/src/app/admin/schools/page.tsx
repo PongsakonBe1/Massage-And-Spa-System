@@ -1,10 +1,7 @@
-// massage-lms-frontend/src/app/admin/schools/page.tsx
-// หน้าสำหรับจัดการข้อมูลโรงเรียน (Client Component)
-// ไม่ต้อง Import AdminLayout เพราะจะถูกห่อหุ้มโดย src/app/admin/layout.tsx โดยอัตโนมัติ
+'use client';
 
-'use client'; // *** สำคัญมาก: ระบุว่าเป็น Client Component ***
-
-import React from 'react';
+import '@ant-design/v5-patch-for-react-19';
+import React, { useState } from 'react'; // Import useState
 import { Table, Button, Space, Modal, Form, Input, message } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 
@@ -16,13 +13,20 @@ interface School {
   contact: string;
 }
 
-export default function SchoolsPage() {
-  const [isModalVisible, setIsModalVisible] = React.useState(false);
-  const [editingSchool, setEditingSchool] = React.useState<School | null>(null);
-  const [form] = Form.useForm();
+// กำหนด Type สำหรับข้อมูล Form ของโรงเรียน
+interface SchoolFormValues {
+  name: string;
+  address: string;
+  contact: string;
+}
 
-  // ข้อมูลโรงเรียนจำลอง (Dummy Data)
-  const dummySchools: School[] = [
+export default function SchoolsPage() {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingSchool, setEditingSchool] = useState<School | null>(null);
+  const [form] = Form.useForm<SchoolFormValues>();
+
+  // *** แก้ไข: ใช้ useState เพื่อจัดการข้อมูลโรงเรียนใน State ***
+  const [schools, setSchools] = useState<School[]>([
     {
       key: '1',
       name: 'โรงเรียนสาธิต ม.เกษตรศาสตร์',
@@ -47,7 +51,19 @@ export default function SchoolsPage() {
       address: 'กรุงเทพมหานคร',
       contact: '02-111-2222',
     },
-  ];
+    {
+      key: '5',
+      name: 'โรงเรียนสตรีวิทยา',
+      address: 'กรุงเทพมหานคร',
+      contact: '02-333-4444',
+    },
+    {
+      key: '6',
+      name: 'โรงเรียนหอวัง',
+      address: 'กรุงเทพมหานคร',
+      contact: '02-555-6666',
+    },
+  ]);
 
   // กำหนด Columns สำหรับตาราง Ant Design
   const columns = [
@@ -55,29 +71,29 @@ export default function SchoolsPage() {
       title: 'ชื่อโรงเรียน',
       dataIndex: 'name',
       key: 'name',
-      className: 'font-medium text-gray-900', // Tailwind class
+      className: 'font-medium text-gray-900',
     },
     {
       title: 'ที่อยู่',
       dataIndex: 'address',
       key: 'address',
-      className: 'text-gray-700', // Tailwind class
+      className: 'text-gray-700',
     },
     {
       title: 'เบอร์ติดต่อ',
       dataIndex: 'contact',
       key: 'contact',
-      className: 'text-gray-700', // Tailwind class
+      className: 'text-gray-700',
     },
     {
       title: 'การกระทำ',
       key: 'action',
-      render: (_: unknown, record: School) => (
+      render: (_text: string, record: School) => (
         <Space size="middle">
           <Button
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
-            className="bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow-sm" // Tailwind class
+            className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-sm"
           >
             แก้ไข
           </Button>
@@ -85,7 +101,7 @@ export default function SchoolsPage() {
             icon={<DeleteOutlined />}
             danger
             onClick={() => handleDelete(record.key)}
-            className="rounded-md shadow-sm" // Tailwind class
+            className="rounded-lg shadow-sm"
           >
             ลบ
           </Button>
@@ -94,112 +110,121 @@ export default function SchoolsPage() {
     },
   ];
 
-  // ฟังก์ชันสำหรับเปิด Modal เพิ่มโรงเรียน
   const handleAdd = () => {
-    setEditingSchool(null); // ตั้งค่าเป็น null เพื่อระบุว่าเป็นการเพิ่มใหม่
-    form.resetFields(); // ล้างข้อมูลในฟอร์ม
-    setIsModalVisible(true); // เปิด Modal
+    setEditingSchool(null);
+    form.resetFields();
+    setIsModalVisible(true);
   };
 
-  // ฟังก์ชันสำหรับเปิด Modal แก้ไขโรงเรียน
   const handleEdit = (record: School) => {
-    setEditingSchool(record); // ตั้งค่าข้อมูลโรงเรียนที่กำลังแก้ไข
-    form.setFieldsValue(record); // กำหนดค่าในฟอร์มตามข้อมูลที่เลือก
-    setIsModalVisible(true); // เปิด Modal
+    setEditingSchool(record);
+    form.setFieldsValue(record);
+    setIsModalVisible(true);
   };
 
-  // ฟังก์ชันสำหรับลบโรงเรียน
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleDelete = (_key: string) => {
+  const handleDelete = (keyToDelete: string) => { // เปลี่ยนชื่อ parameter เป็น keyToDelete
     Modal.confirm({
       title: 'ยืนยันการลบ',
       content: 'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลโรงเรียนนี้?',
       okText: 'ลบ',
       cancelText: 'ยกเลิก',
       onOk() {
-        // *** Logic สำหรับลบข้อมูลจริง (คุณจะต้องเรียก API ไปยัง Backend ที่นี่) ***
+        // *** แก้ไข: อัปเดต State โดยการกรองโรงเรียนที่ถูกลบออก ***
+        setSchools(prevSchools => prevSchools.filter(school => school.key !== keyToDelete));
         message.success('ลบข้อมูลโรงเรียนสำเร็จ!');
-        // หลังจากลบสำเร็จ คุณอาจจะต้องดึงข้อมูลใหม่จาก Backend หรืออัปเดต State
+        // ในอนาคต: เรียก API ลบข้อมูลจาก Backend
       },
     });
   };
 
-  // ฟังก์ชันเมื่อกดปุ่ม OK ใน Modal (เพิ่ม/แก้ไข)
   const handleOk = () => {
-    form.validateFields() // ตรวจสอบความถูกต้องของข้อมูลในฟอร์ม
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .then(_values => {
+    form.validateFields()
+      .then((values: SchoolFormValues) => {
         if (editingSchool) {
-          // *** Logic สำหรับอัปเดตข้อมูลจริง (คุณจะต้องเรียก API ไปยัง Backend ที่นี่) ***
+          // *** แก้ไข: อัปเดต State สำหรับการแก้ไขข้อมูล ***
+          setSchools(prevSchools =>
+            prevSchools.map(school =>
+              school.key === editingSchool.key ? { ...school, ...values } : school
+            )
+          );
           message.success('อัปเดตข้อมูลโรงเรียนสำเร็จ!');
+          // ในอนาคต: เรียก API อัปเดตข้อมูลไปยัง Backend
         } else {
-          // *** Logic สำหรับเพิ่มข้อมูลจริง (คุณจะต้องเรียก API ไปยัง Backend ที่นี่) ***
+          // *** แก้ไข: อัปเดต State สำหรับการเพิ่มข้อมูลใหม่ ***
+          // สร้าง key ใหม่สำหรับโรงเรียนที่เพิ่มเข้ามา
+          const newSchool: School = {
+            key: (schools.length + 1).toString(), // สร้าง key แบบง่ายๆ (ควรสร้างจาก Backend จริงๆ)
+            ...values,
+          };
+          setSchools(prevSchools => [...prevSchools, newSchool]);
           message.success('เพิ่มข้อมูลโรงเรียนสำเร็จ!');
+          // ในอนาคต: เรียก API เพิ่มข้อมูลไปยัง Backend
         }
-        setIsModalVisible(false); // ปิด Modal
+        setIsModalVisible(false);
       })
       .catch(info => {
-        console.log('Validate Failed:', info); // แสดงข้อผิดพลาดในการ Validate
+        console.log('Validate Failed:', info);
       });
   };
 
-  // ฟังก์ชันเมื่อกดปุ่ม Cancel ใน Modal
   const handleCancel = () => {
-    setIsModalVisible(false); // ปิด Modal
+    setIsModalVisible(false);
   };
 
   return (
-    <> {/* ใช้ Fragment แทนการห่อหุ้มด้วย AdminLayout */}
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">จัดการข้อมูลโรงเรียน</h1>
+    <>
+      <h1 className="text-3xl font-bold mb-8 text-gray-800">จัดการข้อมูลโรงเรียน</h1>
       <Button
         type="primary"
         icon={<PlusOutlined />}
         onClick={handleAdd}
-        className="mb-4 bg-green-500 hover:bg-green-600 text-white rounded-md shadow-md" // Tailwind class
+        className="mb-6 bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-md px-6 py-3 text-base"
       >
         เพิ่มโรงเรียนใหม่
       </Button>
       <Table
         columns={columns}
-        dataSource={dummySchools}
-        className="rounded-lg shadow-md" // Tailwind class
-        pagination={{ pageSize: 10 }} // เพิ่ม pagination
+        // *** แก้ไข: ใช้ schools state เป็น dataSource ***
+        dataSource={schools}
+        className="rounded-xl shadow-custom-light"
+        pagination={{ pageSize: 10 }}
+        bordered={false}
       />
 
-      {/* Modal สำหรับเพิ่ม/แก้ไขข้อมูลโรงเรียน */}
       <Modal
         title={editingSchool ? 'แก้ไขข้อมูลโรงเรียน' : 'เพิ่มโรงเรียนใหม่'}
-        open={isModalVisible} // ใช้ 'open' แทน 'visible' สำหรับ Ant Design V5
+        open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
-        className="rounded-lg" // Tailwind class
+        className="rounded-xl"
+        centered
       >
         <Form
           form={form}
           layout="vertical"
           name="school_form"
-          className="p-4" // Tailwind class
+          className="p-4"
         >
           <Form.Item
             name="name"
-            label="ชื่อโรงเรียน"
+            label={<span className="font-semibold text-gray-700">ชื่อโรงเรียน</span>}
             rules={[{ required: true, message: 'กรุณากรอกชื่อโรงเรียน!' }]}
           >
-            <Input placeholder="เช่น โรงเรียนสาธิต ม.เกษตรศาสตร์" className="rounded-md" /> {/* Tailwind class */}
+            <Input placeholder="เช่น โรงเรียนสาธิต ม.เกษตรศาสตร์" className="rounded-lg" />
           </Form.Item>
           <Form.Item
             name="address"
-            label="ที่อยู่"
+            label={<span className="font-semibold text-gray-700">ที่อยู่</span>}
             rules={[{ required: true, message: 'กรุณากรอกที่อยู่!' }]}
           >
-            <Input placeholder="เช่น กรุงเทพมหานคร" className="rounded-md" /> {/* Tailwind class */}
+            <Input placeholder="เช่น กรุงเทพมหานคร" className="rounded-lg" />
           </Form.Item>
           <Form.Item
             name="contact"
-            label="เบอร์ติดต่อ"
+            label={<span className="font-semibold text-gray-700">เบอร์ติดต่อ</span>}
             rules={[{ required: true, message: 'กรุณากรอกเบอร์ติดต่อ!' }]}
           >
-            <Input placeholder="เช่น 02-123-4567" className="rounded-md" /> {/* Tailwind class */}
+            <Input placeholder="เช่น 02-123-4567" className="rounded-lg" />
           </Form.Item>
         </Form>
       </Modal>

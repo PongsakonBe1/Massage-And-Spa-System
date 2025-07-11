@@ -1,5 +1,6 @@
 'use client'; // *** สำคัญมาก: ระบุว่าเป็น Client Component ***
 
+import '@ant-design/v5-patch-for-react-19';
 import React from 'react';
 import { Layout, Menu, theme } from 'antd';
 import {
@@ -20,6 +21,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
   const pathname = usePathname(); // Hook สำหรับ App Router เพื่อดู path ปัจจุบัน
@@ -50,13 +52,14 @@ export default function AdminLayout({
         width={250} // กำหนดความกว้างของ Sider
         className="shadow-lg" // เพิ่ม Tailwind class สำหรับเงา
       >
-        <div className="demo-logo-vertical flex items-center justify-center h-16 text-white text-2xl font-bold">
+        <div className="demo-logo-vertical flex items-center justify-center h-16 text-white text-2xl font-bold border-b border-gray-700">
           LMS Admin
         </div>
         <Menu
           theme="dark"
           mode="inline"
           selectedKeys={[selectedKey]} // ใช้ selectedKeys เพื่อควบคุม active item
+          className="pt-4" // เพิ่ม padding ด้านบน
           items={[
             {
               key: '1',
@@ -87,16 +90,18 @@ export default function AdminLayout({
         />
       </Sider>
       <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer }} className="shadow-md" /> {/* เพิ่ม Tailwind class */}
-        <Content style={{ margin: '24px 16px 0', overflowY: 'auto', overflowX: 'hidden' }}> {/* เพิ่ม overflowY: 'auto' */}
+        {/* Header ของ Admin Layout */}
+        <Header style={{ padding: 0, background: colorBgContainer }} className="shadow-sm border-b border-gray-200" />
+        {/* Content Area ที่จะแสดงหน้าย่อยต่างๆ */}
+        <Content style={{ margin: '24px 16px 0', overflowY: 'auto', overflowX: 'hidden' }}>
           <div
             style={{
               padding: 24,
               minHeight: 'calc(100vh - 112px)', // ปรับ minHeight ให้พอดีกับ Header และ Margin
               background: colorBgContainer,
-              borderRadius: borderRadiusLG,
+              // borderRadius: borderRadiusLG, // ใช้ Tailwind class แทน
             }}
-            className="rounded-lg shadow-inner" // เพิ่ม Tailwind class
+            className="rounded-lg shadow-md bg-white" // เพิ่ม Tailwind class
           >
             {children}
           </div>
@@ -105,4 +110,3 @@ export default function AdminLayout({
     </Layout>
   );
 }
-

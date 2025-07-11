@@ -2,8 +2,14 @@
 
 import '@ant-design/v5-patch-for-react-19';
 import React from 'react';
-import { Card, Col, Row, Statistic, List, Typography } from 'antd';
-import { UserOutlined, BookOutlined, FileTextOutlined, CalendarOutlined } from '@ant-design/icons';
+import { Card, Col, Row, List, Typography, Progress } from 'antd';
+import {
+  UserOutlined,
+  BookOutlined,
+  DollarOutlined,
+  WalletOutlined,
+  CalendarOutlined,
+} from '@ant-design/icons';
 
 const { Text } = Typography;
 
@@ -17,46 +23,107 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <> {/* ใช้ Fragment แทนการห่อหุ้มด้วย AdminLayout */}
-      <h1 className="text-3xl font-bold mb-8 text-gray-800">ภาพรวมระบบ Admin</h1>
-      <Row gutter={[24, 24]}> {/* เพิ่ม gutter ในแนวตั้งและแนวนอน */}
-        {/* Card แสดงจำนวนโรงเรียน */}
-        <Col xs={24} sm={12} lg={8}>
-          <Card variant='borderless' className="rounded-xl shadow-custom-light hover:shadow-custom-medium transition-shadow duration-300">
-            <Statistic
-              title={<span className="text-gray-600 text-lg">จำนวนโรงเรียน</span>}
-              value={112893}
-              prefix={<UserOutlined className="text-blue-500 text-3xl" />}
-              valueStyle={{ color: '#1890ff', fontSize: '2.5rem' }}
-            />
+    <>
+      <h1 className="text-3xl font-bold mb-8 text-gray-800">Dashboard</h1>
+      <Row gutter={[24, 24]}>
+        {/* Summary Cards */}
+        <Col xs={24} sm={12} lg={6}>
+          <Card variant='borderless' className="summary-card bg-white">
+            <div className="icon-wrapper bg-pink-500">
+              <UserOutlined />
+            </div>
+            <div>
+              <div className="ant-statistic-title">Student</div>
+              <div className="ant-statistic-content">36</div>
+            </div>
           </Card>
         </Col>
-        {/* Card แสดงจำนวนหลักสูตร */}
-        <Col xs={24} sm={12} lg={8}>
-          <Card variant='borderless' className="rounded-xl shadow-custom-light hover:shadow-custom-medium transition-shadow duration-300">
-            <Statistic
-              title={<span className="text-gray-600 text-lg">จำนวนหลักสูตร</span>}
-              value={1128}
-              precision={0}
-              prefix={<BookOutlined className="text-green-500 text-3xl" />}
-              valueStyle={{ color: '#52c41a', fontSize: '2.5rem' }}
-            />
+        <Col xs={24} sm={12} lg={6}>
+          <Card variant='borderless' className="summary-card bg-white">
+            <div className="icon-wrapper bg-purple-500">
+              <BookOutlined />
+            </div>
+            <div>
+              <div className="ant-statistic-title">Course</div>
+              <div className="ant-statistic-content">12</div>
+            </div>
           </Card>
         </Col>
-        {/* Card แสดงสถิติเกียรติบัตรที่ออกแล้ว */}
-        <Col xs={24} sm={12} lg={8}>
-          <Card variant='borderless' className="rounded-xl shadow-custom-light hover:shadow-custom-medium transition-shadow duration-300">
-            <Statistic
-              title={<span className="text-gray-600 text-lg">เกียรติบัตรที่ออกแล้ว</span>}
-              value={93}
-              suffix="%"
-              prefix={<FileTextOutlined className="text-purple-500 text-3xl" />}
-              valueStyle={{ color: '#9254de', fontSize: '2.5rem' }}
-            />
+        <Col xs={24} sm={12} lg={6}>
+          <Card variant='borderless' className="summary-card bg-white">
+            <div className="icon-wrapper bg-green-500">
+              <DollarOutlined />
+            </div>
+            <div>
+              <div className="ant-statistic-title">Revenue</div>
+              <div className="ant-statistic-content">6500</div>
+            </div>
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card variant='borderless' className="summary-card bg-white">
+            <div className="icon-wrapper bg-orange-500">
+              <WalletOutlined />
+            </div>
+            <div>
+              <div className="ant-statistic-title">Pending Payments</div>
+              <div className="ant-statistic-content">65</div>
+            </div>
+          </Card>
+        </Col>
+
+        {/* Charts Section */}
+        <Col xs={24} lg={16}>
+          <Card variant='borderless' className="rounded-xl shadow-custom-light h-full">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">Revenue</h2>
+            {/* Placeholder for Revenue Chart */}
+            <div className="bg-gray-100 h-64 flex items-center justify-center rounded-lg text-gray-500">
+              [กราฟรายได้จะแสดงที่นี่]
+            </div>
+          </Card>
+        </Col>
+        <Col xs={24} lg={8}>
+          <Card variant='borderless' className="rounded-xl shadow-custom-light h-full">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">Popular courses</h2>
+            {/* Placeholder for Popular Courses */}
+            <div className="bg-gray-100 h-64 flex items-center justify-center rounded-lg text-gray-500">
+              [กราฟหลักสูตรยอดนิยมจะแสดงที่นี่]
+            </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} sm={12}>
+          <Card variant='borderless' className="rounded-xl shadow-custom-light h-full">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">Student activity</h2>
+            {/* Placeholder for Student Activity Chart (Pie Chart) */}
+            <div className="flex justify-center items-center h-48 bg-gray-100 rounded-lg">
+              <Progress type="circle" percent={75} size={120} format={() => '75%'} />
+            </div>
+          </Card>
+        </Col>
+        <Col xs={24} sm={12}>
+          <Card variant='borderless' className="rounded-xl shadow-custom-light h-full">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">Payment status</h2>
+            {/* Placeholder for Payment Status (Bar Chart / Progress bars) */}
+            <div className="space-y-4 bg-gray-100 p-4 rounded-lg">
+              <div>
+                <Text className="text-gray-600">Complete</Text>
+                <Progress percent={80} showInfo={false} strokeColor="#52c41a" />
+              </div>
+              <div>
+                <Text className="text-gray-600">Unpaid</Text>
+                <Progress percent={15} showInfo={false} strokeColor="#faad14" />
+              </div>
+              <div>
+                <Text className="text-gray-600">Pending</Text>
+                <Progress percent={5} showInfo={false} strokeColor="#1890ff" />
+              </div>
+            </div>
           </Card>
         </Col>
       </Row>
-      {/* ส่วนแสดงกิจกรรมล่าสุด */}
+
+      {/* Latest Activities Section */}
       <div className="mt-10 p-8 bg-white rounded-xl shadow-custom-light">
         <h2 className="text-2xl font-semibold mb-6 text-gray-700">กิจกรรมล่าสุด</h2>
         <List

@@ -2,19 +2,29 @@
 
 import '@ant-design/v5-patch-for-react-19';
 import React, { useState } from 'react';
-import { Table, Button, Space, Modal, Form, Input, message } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Modal, Form, Input, message, Tag, Select, Typography } from 'antd'; // เพิ่ม Typography
+import { EditOutlined, EyeOutlined, PlusOutlined, SearchOutlined, DeleteOutlined } from '@ant-design/icons';
+
+const { Option } = Select;
+const { Text } = Typography; // Destructure Text from Typography
 
 interface Course {
   key: string;
-  name: string;
-  duration: string;
+  title: string;
+  organization: string;
+  price: number;
+  studentsEnrolled: number;
+  status: 'ACTIVE' | 'INACTIVE';
+  actions: string;
   description: string;
 }
 
 interface CourseFormValues {
-  name: string;
-  duration: string;
+  title: string;
+  organization: string;
+  price: number;
+  studentsEnrolled: number;
+  status: 'ACTIVE' | 'INACTIVE';
   description: string;
 }
 
@@ -23,79 +33,126 @@ export default function CoursesPage() {
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [form] = Form.useForm<CourseFormValues>();
 
-  // *** แก้ไข: ใช้ useState เพื่อจัดการข้อมูลหลักสูตรใน State ***
+  // *** เพิ่ม State สำหรับ Modal แสดงรายละเอียด ***
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [viewingCourse, setViewingCourse] = useState<Course | null>(null);
+
   const [courses, setCourses] = useState<Course[]>([
     {
       key: '1',
-      name: 'หลักสูตรนวดแผนไทยเบื้องต้น',
-      duration: '40 ชั่วโมง',
+      title: 'หลักสูตรนวดแผนไทยเบื้องต้น',
+      organization: 'โรงเรียนนวดไทย',
+      price: 12500,
+      studentsEnrolled: 30,
+      status: 'ACTIVE',
+      actions: '',
       description: 'เรียนรู้เทคนิคการนวดแผนไทยพื้นฐานและประวัติศาสตร์',
     },
     {
       key: '2',
-      name: 'หลักสูตรสปาเพื่อสุขภาพ',
-      duration: '60 ชั่วโมง',
+      title: 'หลักสูตรสปาเพื่อสุขภาพ',
+      organization: 'สปาบำบัดสุข',
+      price: 15000,
+      studentsEnrolled: 25,
+      status: 'ACTIVE',
+      actions: '',
       description: 'เรียนรู้การทำสปาและทรีทเม้นท์ต่างๆ เพื่อสุขภาพและความผ่อนคลาย',
     },
     {
       key: '3',
-      name: 'หลักสูตรอโรมาเธอราพี',
-      duration: '30 ชั่วโมง',
+      title: 'หลักสูตรอโรมาเธอราพี',
+      organization: 'ศูนย์บำบัดกลิ่นหอม',
+      price: 10000,
+      studentsEnrolled: 15,
+      status: 'INACTIVE',
+      actions: '',
       description: 'เรียนรู้การใช้น้ำมันหอมระเหยเพื่อการบำบัดและเทคนิคการผสม',
     },
     {
       key: '4',
-      name: 'หลักสูตรนวดกดจุดเท้า',
-      duration: '20 ชั่วโมง',
+      title: 'หลักสูตรนวดกดจุดเท้า',
+      organization: 'คลินิกเท้าเพื่อสุขภาพ',
+      price: 8000,
+      studentsEnrolled: 20,
+      status: 'ACTIVE',
+      actions: '',
       description: 'เรียนรู้การนวดกดจุดเท้าเพื่อสุขภาพและบรรเทาอาการต่างๆ',
     },
     {
       key: '5',
-      name: 'หลักสูตรการดูแลผิวหน้า',
-      duration: '35 ชั่วโมง',
+      title: 'หลักสูตรการดูแลผิวหน้า',
+      organization: 'สถาบันความงาม',
+      price: 18000,
+      studentsEnrolled: 10,
+      status: 'INACTIVE',
+      actions: '',
       description: 'เรียนรู้เทคนิคการดูแลผิวหน้าและการใช้ผลิตภัณฑ์ที่เหมาะสม',
     },
   ]);
 
   const columns = [
     {
-      title: 'ชื่อหลักสูตร',
-      dataIndex: 'name',
-      key: 'name',
+      title: '#',
+      dataIndex: 'key',
+      key: 'key',
+      render: (text: string) => parseInt(text), // แสดงเป็นตัวเลข
+      width: 50,
+      className: 'text-gray-600',
+    },
+    {
+      title: 'TITLE',
+      dataIndex: 'title',
+      key: 'title',
       className: 'font-medium text-gray-900',
     },
     {
-      title: 'ระยะเวลา',
-      dataIndex: 'duration',
-      key: 'duration',
+      title: 'ORGANIZATION',
+      dataIndex: 'organization',
+      key: 'organization',
       className: 'text-gray-700',
     },
     {
-      title: 'คำอธิบาย',
-      dataIndex: 'description',
-      key: 'description',
+      title: 'PRICE',
+      dataIndex: 'price',
+      key: 'price',
+      render: (price: number) => `${price.toLocaleString()} THB`, // แสดงราคาเป็นสกุลเงิน
       className: 'text-gray-700',
     },
     {
-      title: 'การกระทำ',
-      key: 'action',
+      title: 'STUDENTS ENROLLED',
+      dataIndex: 'studentsEnrolled',
+      key: 'studentsEnrolled',
+      className: 'text-gray-700',
+    },
+    {
+      title: 'STATUS',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: 'ACTIVE' | 'INACTIVE') => (
+        <Tag color={status === 'ACTIVE' ? 'green' : 'red'} className="rounded-full px-3 py-1 text-xs font-semibold">
+          {status}
+        </Tag>
+      ),
+      className: 'text-center',
+    },
+    {
+      title: 'ACTIONS',
+      key: 'actions',
       render: (_text: string, record: Course) => (
         <Space size="middle">
+          {/* *** เพิ่มปุ่มดูรายละเอียด *** */}
           <Button
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-            className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-sm"
-          >
-            แก้ไข
-          </Button>
+            icon={<EyeOutlined />}
+            onClick={() => handleView(record)}
+            className="text-gray-500 border-none shadow-none hover:bg-gray-50"
+          />
+          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} className="text-blue-500 border-none shadow-none hover:bg-blue-50" />
           <Button
             icon={<DeleteOutlined />}
             danger
             onClick={() => handleDelete(record.key)}
-            className="rounded-lg shadow-sm"
-          >
-            ลบ
-          </Button>
+            className="text-red-500 border-none shadow-none hover:bg-red-50"
+          />
         </Space>
       ),
     },
@@ -120,7 +177,6 @@ export default function CoursesPage() {
       okText: 'ลบ',
       cancelText: 'ยกเลิก',
       onOk() {
-        // *** แก้ไข: อัปเดต State โดยการกรองหลักสูตรที่ถูกลบออก ***
         setCourses(prevCourses => prevCourses.filter(course => course.key !== keyToDelete));
         message.success('ลบข้อมูลหลักสูตรสำเร็จ!');
       },
@@ -131,7 +187,6 @@ export default function CoursesPage() {
     form.validateFields()
       .then((values: CourseFormValues) => {
         if (editingCourse) {
-          // *** แก้ไข: อัปเดต State สำหรับการแก้ไขข้อมูล ***
           setCourses(prevCourses =>
             prevCourses.map(course =>
               course.key === editingCourse.key ? { ...course, ...values } : course
@@ -139,10 +194,10 @@ export default function CoursesPage() {
           );
           message.success('อัปเดตข้อมูลหลักสูตรสำเร็จ!');
         } else {
-          // *** แก้ไข: อัปเดต State สำหรับการเพิ่มข้อมูลใหม่ ***
           const newCourse: Course = {
-            key: (courses.length + 1).toString(), // ควรสร้าง key จาก Backend จริงๆ
+            key: (courses.length + 1).toString(),
             ...values,
+            actions: '',
           };
           setCourses(prevCourses => [...prevCourses, newCourse]);
           message.success('เพิ่มข้อมูลหลักสูตรสำเร็จ!');
@@ -158,20 +213,39 @@ export default function CoursesPage() {
     setIsModalVisible(false);
   };
 
+  // *** ฟังก์ชันสำหรับเปิด Modal แสดงรายละเอียด ***
+  const handleView = (record: Course) => {
+    setViewingCourse(record);
+    setIsDetailModalVisible(true);
+  };
+
+  // *** ฟังก์ชันสำหรับปิด Modal แสดงรายละเอียด ***
+  const handleDetailModalCancel = () => {
+    setIsDetailModalVisible(false);
+    setViewingCourse(null);
+  };
+
   return (
     <>
-      <h1 className="text-3xl font-bold mb-8 text-gray-800">จัดการข้อมูลหลักสูตร</h1>
-      <Button
-        type="primary"
-        icon={<PlusOutlined />}
-        onClick={handleAdd}
-        className="mb-6 bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-md px-6 py-3 text-base"
-      >
-        เพิ่มหลักสูตรใหม่
-      </Button>
+      <h1 className="text-3xl font-bold mb-8 text-gray-800">Course</h1>
+      <div className="flex justify-between items-center mb-6">
+        <Input
+          placeholder="Search"
+          prefix={<SearchOutlined className="text-gray-400" />}
+          className="w-80 rounded-lg shadow-sm table-search-input"
+        />
+        <Button
+          type="primary"
+          onClick={handleAdd}
+          icon={<PlusOutlined />}
+          className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg shadow-md px-6 py-3 text-base"
+        >
+          เพิ่ม
+        </Button>
+      </div>
+
       <Table
         columns={columns}
-        // *** แก้ไข: ใช้ courses state เป็น dataSource ***
         dataSource={courses}
         className="rounded-xl shadow-custom-light"
         pagination={{ pageSize: 10 }}
@@ -193,28 +267,73 @@ export default function CoursesPage() {
           className="p-4"
         >
           <Form.Item
-            name="name"
+            name="title"
             label={<span className="font-semibold text-gray-700">ชื่อหลักสูตร</span>}
             rules={[{ required: true, message: 'กรุณากรอกชื่อหลักสูตร!' }]}
           >
             <Input placeholder="เช่น หลักสูตรนวดแผนไทย" className="rounded-lg" />
           </Form.Item>
           <Form.Item
-            name="duration"
-            label={<span className="font-semibold text-gray-700">ระยะเวลา</span>}
-            rules={[{ required: true, message: 'กรุณากรอกระยะเวลาหลักสูตร!' }]}
+            name="organization"
+            label={<span className="font-semibold text-gray-700">องค์กร</span>}
+            rules={[{ required: true, message: 'กรุณากรอกชื่อองค์กร!' }]}
           >
-            <Input placeholder="เช่น 40 ชั่วโมง" className="rounded-lg" />
+            <Input placeholder="เช่น โรงเรียนนวดไทย" className="rounded-lg" />
+          </Form.Item>
+          <Form.Item
+            name="price"
+            label={<span className="font-semibold text-gray-700">ราคา</span>}
+            rules={[{ required: true, message: 'กรุณากรอกราคา!', type: 'number', transform: (value) => Number(value) || 0 }]}
+          >
+            <Input type="number" placeholder="เช่น 12500" className="rounded-lg" />
+          </Form.Item>
+          <Form.Item
+            name="studentsEnrolled"
+            label={<span className="font-semibold text-gray-700">จำนวนนักเรียนที่ลงทะเบียน</span>}
+            rules={[{ required: true, message: 'กรุณากรอกจำนวนนักเรียน!', type: 'number', transform: (value) => Number(value) || 0 }]}
+          >
+            <Input type="number" placeholder="เช่น 30" className="rounded-lg" />
+          </Form.Item>
+          <Form.Item
+            name="status"
+            label={<span className="font-semibold text-gray-700">สถานะ</span>}
+            rules={[{ required: true, message: 'กรุณาเลือกสถานะ!' }]}
+          >
+            <Select<CourseFormValues['status']> placeholder="เลือกสถานะ" className="rounded-lg">
+              <Option value="ACTIVE">ACTIVE</Option>
+              <Option value="INACTIVE">INACTIVE</Option>
+            </Select>
           </Form.Item>
           <Form.Item
             name="description"
             label={<span className="font-semibold text-gray-700">คำอธิบาย</span>}
-            // *** แก้ไข: ลบ 'true' ที่ซ้ำซ้อนออกไป (ถ้ามี) ***
-            // rules={[{ required: true, message: 'กรุณากรอกคำอธิบาย!' }]} // ตัวอย่างถ้าต้องการให้เป็น required
           >
             <Input.TextArea rows={4} placeholder="รายละเอียดเกี่ยวกับหลักสูตร" className="rounded-lg" />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* *** Modal สำหรับแสดงรายละเอียดหลักสูตร *** */}
+      <Modal
+        title="รายละเอียดหลักสูตร"
+        open={isDetailModalVisible}
+        onCancel={handleDetailModalCancel}
+        footer={null}
+        className="rounded-xl"
+        centered
+      >
+        {viewingCourse ? (
+          <div className="p-4">
+            <p className="mb-2"><Text strong>ชื่อหลักสูตร:</Text> {viewingCourse.title}</p>
+            <p className="mb-2"><Text strong>องค์กร:</Text> {viewingCourse.organization}</p>
+            <p className="mb-2"><Text strong>ราคา:</Text> {viewingCourse.price.toLocaleString()} THB</p>
+            <p className="mb-2"><Text strong>จำนวนนักเรียนที่ลงทะเบียน:</Text> {viewingCourse.studentsEnrolled}</p>
+            <p className="mb-2"><Text strong>สถานะ:</Text> <Tag color={viewingCourse.status === 'ACTIVE' ? 'green' : 'red'}>{viewingCourse.status}</Tag></p>
+            <p className="mb-2"><Text strong>คำอธิบาย:</Text> {viewingCourse.description}</p>
+          </div>
+        ) : (
+          <p>ไม่พบข้อมูล</p>
+        )}
       </Modal>
     </>
   );

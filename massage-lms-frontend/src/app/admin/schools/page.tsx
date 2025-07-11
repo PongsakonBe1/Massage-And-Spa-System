@@ -1,9 +1,11 @@
 'use client';
 
 import '@ant-design/v5-patch-for-react-19';
-import React, { useState } from 'react'; // Import useState
-import { Table, Button, Space, Modal, Form, Input, message } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import React, { useState } from 'react';
+import { Table, Button, Space, Modal, Form, Input, message, Typography } from 'antd'; // เพิ่ม Typography
+import { EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons'; // เพิ่ม EyeOutlined
+
+const { Text } = Typography; // Destructure Text from Typography
 
 // กำหนด Type สำหรับข้อมูลโรงเรียน
 interface School {
@@ -25,7 +27,10 @@ export default function SchoolsPage() {
   const [editingSchool, setEditingSchool] = useState<School | null>(null);
   const [form] = Form.useForm<SchoolFormValues>();
 
-  // *** แก้ไข: ใช้ useState เพื่อจัดการข้อมูลโรงเรียนใน State ***
+  // *** เพิ่ม State สำหรับ Modal แสดงรายละเอียด ***
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [viewingSchool, setViewingSchool] = useState<School | null>(null);
+
   const [schools, setSchools] = useState<School[]>([
     {
       key: '1',
@@ -90,6 +95,12 @@ export default function SchoolsPage() {
       key: 'action',
       render: (_text: string, record: School) => (
         <Space size="middle">
+          {/* *** เพิ่มปุ่มดูรายละเอียด *** */}
+          <Button
+            icon={<EyeOutlined />}
+            onClick={() => handleView(record)}
+            className="text-gray-500 border-none shadow-none hover:bg-gray-50"
+          />
           <Button
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
@@ -122,17 +133,15 @@ export default function SchoolsPage() {
     setIsModalVisible(true);
   };
 
-  const handleDelete = (keyToDelete: string) => { // เปลี่ยนชื่อ parameter เป็น keyToDelete
+  const handleDelete = (keyToDelete: string) => {
     Modal.confirm({
       title: 'ยืนยันการลบ',
       content: 'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลโรงเรียนนี้?',
       okText: 'ลบ',
       cancelText: 'ยกเลิก',
       onOk() {
-        // *** แก้ไข: อัปเดต State โดยการกรองโรงเรียนที่ถูกลบออก ***
         setSchools(prevSchools => prevSchools.filter(school => school.key !== keyToDelete));
         message.success('ลบข้อมูลโรงเรียนสำเร็จ!');
-        // ในอนาคต: เรียก API ลบข้อมูลจาก Backend
       },
     });
   };
@@ -141,24 +150,19 @@ export default function SchoolsPage() {
     form.validateFields()
       .then((values: SchoolFormValues) => {
         if (editingSchool) {
-          // *** แก้ไข: อัปเดต State สำหรับการแก้ไขข้อมูล ***
           setSchools(prevSchools =>
             prevSchools.map(school =>
               school.key === editingSchool.key ? { ...school, ...values } : school
             )
           );
           message.success('อัปเดตข้อมูลโรงเรียนสำเร็จ!');
-          // ในอนาคต: เรียก API อัปเดตข้อมูลไปยัง Backend
         } else {
-          // *** แก้ไข: อัปเดต State สำหรับการเพิ่มข้อมูลใหม่ ***
-          // สร้าง key ใหม่สำหรับโรงเรียนที่เพิ่มเข้ามา
           const newSchool: School = {
-            key: (schools.length + 1).toString(), // สร้าง key แบบง่ายๆ (ควรสร้างจาก Backend จริงๆ)
+            key: (schools.length + 1).toString(),
             ...values,
           };
           setSchools(prevSchools => [...prevSchools, newSchool]);
           message.success('เพิ่มข้อมูลโรงเรียนสำเร็จ!');
-          // ในอนาคต: เรียก API เพิ่มข้อมูลไปยัง Backend
         }
         setIsModalVisible(false);
       })
@@ -169,6 +173,18 @@ export default function SchoolsPage() {
 
   const handleCancel = () => {
     setIsModalVisible(false);
+  };
+
+  // *** ฟังก์ชันสำหรับเปิด Modal แสดงรายละเอียด ***
+  const handleView = (record: School) => {
+    setViewingSchool(record);
+    setIsDetailModalVisible(true);
+  };
+
+  // *** ฟังก์ชันสำหรับปิด Modal แสดงรายละเอียด ***
+  const handleDetailModalCancel = () => {
+    setIsDetailModalVisible(false);
+    setViewingSchool(null); // ล้างข้อมูลที่กำลังดู
   };
 
   return (
@@ -184,7 +200,6 @@ export default function SchoolsPage() {
       </Button>
       <Table
         columns={columns}
-        // *** แก้ไข: ใช้ schools state เป็น dataSource ***
         dataSource={schools}
         className="rounded-xl shadow-custom-light"
         pagination={{ pageSize: 10 }}
@@ -227,6 +242,26 @@ export default function SchoolsPage() {
             <Input placeholder="เช่น 02-123-4567" className="rounded-lg" />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* *** Modal สำหรับแสดงรายละเอียดโรงเรียน *** */}
+      <Modal
+        title="รายละเอียดโรงเรียน"
+        open={isDetailModalVisible}
+        onCancel={handleDetailModalCancel}
+        footer={null} // ไม่มีปุ่ม footer
+        className="rounded-xl"
+        centered
+      >
+        {viewingSchool ? (
+          <div className="p-4">
+            <p className="mb-2"><Text strong>ชื่อโรงเรียน:</Text> {viewingSchool.name}</p>
+            <p className="mb-2"><Text strong>ที่อยู่:</Text> {viewingSchool.address}</p>
+            <p className="mb-2"><Text strong>เบอร์ติดต่อ:</Text> {viewingSchool.contact}</p>
+          </div>
+        ) : (
+          <p>ไม่พบข้อมูล</p>
+        )}
       </Modal>
     </>
   );

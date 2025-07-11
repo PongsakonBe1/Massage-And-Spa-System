@@ -22,7 +22,7 @@
 /* Global CSS ของคุณ */
 body {
   margin: 0;
-  /* Font Inter ถูกกำหนดใน src/app/layout.tsx แล้ว */
+  font-family: 'Inter', sans-serif;
   background-color: #f0f2f5; /* สีพื้นหลังโดยรวมตาม Figma */
 }
 
@@ -35,21 +35,30 @@ html, body, #__next {
 
 /* Custom styles for Ant Design overrides or specific elements */
 .ant-layout-sider {
-  background-color: #001529 !important; /* สี Sidebar ตาม Figma */
+  background-color: #2c2c2c !important; /* สี Sidebar ตามภาพ UI */
 }
 
 .ant-menu-dark.ant-menu-inline {
-  background-color: #001529 !important; /* สีเมนูใน Sidebar */
+  background-color: #2c2c2c !important; /* สีเมนูใน Sidebar */
 }
 
 .ant-menu-dark .ant-menu-item-selected {
-  background-color: #1677ff !important; /* สีเมนูที่เลือก */
+  background-color: #4a4a4a !important; /* สีเมนูที่เลือก */
+  border-left: 4px solid #f97316; /* สีส้มตามภาพ */
+  padding-left: calc(24px - 4px) !important; /* ปรับ padding ให้ชดเชยเส้น */
 }
 
-/* เพิ่ม styles สำหรับปุ่มเพื่อให้ดูดีขึ้น */
+.ant-menu-dark .ant-menu-item-selected .ant-menu-item-icon {
+  color: #f97316 !important; /* สีไอคอนของเมนูที่เลือก */
+}
+
+.ant-menu-dark .ant-menu-item-selected .ant-menu-title-content {
+  color: #f97316 !important; /* สีข้อความของเมนูที่เลือก */
+}
+
 .ant-btn-primary {
-  border-radius: 8px !important; /* ให้ปุ่มมีขอบมน */
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045); /* เพิ่มเงาเล็กน้อย */
+  border-radius: 8px !important;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045);
 }
 
 .ant-btn-primary:hover {
@@ -57,28 +66,74 @@ html, body, #__next {
 }
 
 .ant-card {
-  border-radius: 12px !important; /* Card มีขอบมนมากขึ้น */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* เงา Card */
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .ant-modal-content {
-  border-radius: 12px !important; /* Modal มีขอบมน */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* เงา Modal */
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .ant-table-wrapper {
-  border-radius: 12px !important; /* Table มีขอบมน */
-  overflow: hidden; /* เพื่อให้ขอบมนของ Table แสดงผลถูกต้อง */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* เงา Table */
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .ant-table-thead > tr > th {
-  background-color: #f5f5f5 !important; /* สีพื้นหลัง Header ของ Table */
+  background-color: #f5f5f5 !important;
   font-weight: 600 !important;
   color: #333 !important;
 }
 
 .ant-input, .ant-select-selector, .ant-picker {
-  border-radius: 8px !important; /* Input fields มีขอบมน */
+  border-radius: 8px !important;
 }
 
+/* Custom styles for the search input in tables */
+.table-search-input .ant-input-affix-wrapper {
+  border-radius: 8px !important;
+  border-color: #d9d9d9 !important;
+  box-shadow: none !important;
+}
+
+.table-search-input .ant-input-affix-wrapper:hover {
+  border-color: #40a9ff !important;
+}
+
+.table-search-input .ant-input-affix-wrapper-focused {
+  border-color: #1890ff !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+}
+
+/* Custom styles for the summary cards in dashboard */
+.summary-card {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.summary-card .ant-statistic-title {
+  font-size: 1rem;
+  color: #6b7280; /* gray-500 */
+}
+
+.summary-card .ant-statistic-content {
+  font-size: 2.25rem; /* text-4xl */
+  font-weight: 700; /* font-bold */
+}
+
+.summary-card .icon-wrapper {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  color: white;
+}
